@@ -1,5 +1,6 @@
 # creaturesGame
-Made by Eneko O'Kelly
+Made by Eneko O'Kelly.
+
 This game was created using only python. 
 It simulates turn-based combat between various fantasy creatures and characters. The battle takes place in rounds, where each objects: Goblin, Orc, Wizard, Archer, Wizard... takes turns to attack or perform special abilities.
 
