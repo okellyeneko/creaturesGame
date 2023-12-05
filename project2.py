@@ -1,4 +1,5 @@
 import random
+import time
 
 class Creature:
     def __init__(self, name, maxHP=10):
@@ -51,7 +52,7 @@ class Creature:
                 print(result)
                 target.check_life()
             else:
-                print(f'{self.name} has no targets, all opponents have fainted, skips turn')
+                print(f'{self.name} has no targets, all opponents have fainted')
 
     
 
@@ -120,7 +121,7 @@ class Orc(Creature):
                 print(result)
                 target.check_life()
             else:
-                print(f'{self.name} has no targets, all opponents have fainted, skips turn')
+                print(f'{self.name} has no targets, all opponents have fainted')
 
 
 # def winner(creatures):
@@ -184,7 +185,7 @@ class Warrior(Creature):
                 print(result)
             target.check_life()
         else:
-            print(f'{self.name} has no targets, all opponents have fainted, skips turn')
+            print(f'{self.name} has no targets, all opponents have fainted')
 
 # def winner(creatures):
 #     return all(creature.HP <= 0 for creature in creatures)
@@ -361,7 +362,7 @@ class OrcGeneral(Orc, Warrior):
                 print(result)
             target.check_life()
         else:
-            print(f'{self.name} has no targets, all opponents have fainted, skips turn')
+            print(f'{self.name} has no targets, all opponents have fainted')
 
 
 class GoblinKing(Goblin, Archer):
@@ -550,17 +551,12 @@ class Wizard(Creature):
             else:
                 self.mana -= 30
                 for x in allies:
-                    healPoints = random.randint(0, 10) + self.abilities['Arcana']
-                    x.HP += healPoints
-                    if x.HP > x.maxHP:
-                        x.HP = x.maxHP
-                    print(f"{self.name} heals {x.name} for {healPoints} HP. HP of {x.name}: {x.HP}.")
-
-                selfHeal = random.randint(0, 10) + self.abilities['Arcana']
-                self.HP += selfHeal
-                if self.HP > self.maxHP:
-                    self.HP = self.maxHP
-                print(f"{self.name} heals himself for {selfHeal} HP. HP of {self.name}: {self.HP}.")
+                    if x.HP > 0:
+                        healPoints = random.randint(0, 10) + self.abilities['Arcana']
+                        x.HP += healPoints
+                        if x.HP > x.maxHP:
+                            x.HP = x.maxHP
+                        print(f"{self.name} heals {x.name} for {healPoints} HP. HP of {x.name}: {x.HP}/{x.maxHP}.")
                 return f'Mana -30. All allies healed. Mana is: {self.mana}.'
 
             
@@ -575,62 +571,178 @@ class Wizard(Creature):
                         damage = damage//2
                     else:
                         damage = random.randint(5, 20) + self.abilities['Arcana']
-                    if x.HP - damage < 0:
-                        x.HP = 0
-                        x.check_life()
-                    else:
-                        x.HP -= damage
-                    print(f"{self.name} fires a fire storm on {x.name}. Damage: {damage}. HP of {x.name}: {x.HP}.")
+                    if x.HP > 0:
+                        if x.HP - damage < 0:
+                            x.HP = 0
+                            x.check_life()
+                        else:
+                            x.HP -= damage
+                        print(f"{self.name} fires a fire storm on {x.name}. Damage: {damage}. HP of {x.name}: {x.HP}.")
                 return f'Mana -50. All enemies damaged. Mana is: {self.mana}.'
 
 
+
         def select_target(self, target_list):
-            targetOK = False
-            while not targetOK:
-                for i, x in enumerate(target_list):
+            available_targets = []
+            for x in target_list:
+                if x.HP > 0:
+                    available_targets.append(x)
+
+            while True:
+                for i, x in enumerate(available_targets):
                     print(f"{i+1}. {x.name}, HP: {x.HP}/{x.maxHP}")
+
                 target = input("Select target: ")
                 if target.isdigit():
                     target = int(target)
-                    if 1 <= target <= len(target_list):
-                        targetOK = True
+                    if 1 <= target <= len(available_targets):
+                        return available_targets[target - 1]
                     else:
                         print("Please enter a valid target number.")
                 else:
                     print("Invalid input. Please enter a number.")
-
-            if targetOK: 
-                return target_list[target - 1] 
-            else: 
-                return None
             
 
 
 
-wizard = Wizard("Gandalf")
+# wizard = Wizard("Gandalf")
 
-targets = [
-    GoblinKing("Target1"),
-    OrcGeneral("Target2"),
-    Creature("Target3")
-]
+# targets = [
+#     GoblinKing("KingGoblin"),
+#     OrcGeneral("GeneralOrc"),
+#     Creature("Gollum")
+# ]
 
-for x in targets:
-    print('===Attack method:===\n') 
-    print(wizard.attack(x))
-    print('\n===Recharge method:===\n') 
-    print(wizard.recharge())
-    print('\n===Fire bolt method:===\n') 
-    print(wizard.fire_bolt(x))
-    print('\n===Heal method:===\n') 
-    print(wizard.heal(x))
-    print('\n===Mass heal method:===\n') 
-    print(wizard.mass_heal(targets))
-    print('\n===Recharge method:===\n') 
-    print(wizard.recharge())
-    print('\n===Fire storm method:===\n') 
-    print(wizard.fire_storm(targets))
-
-
+# for x in targets:
+#     print('===Attack method:===\n') 
+#     print(wizard.attack(x))
+#     print('\n===Recharge method:===\n') 
+#     print(wizard.recharge())
+#     print('\n===Fire bolt method:===\n') 
+#     print(wizard.fire_bolt(x))
+#     print('\n===Heal method:===\n') 
+#     print(wizard.heal(x))
+#     print('\n===Mass heal method:===\n') 
+#     print(wizard.mass_heal(targets))
+#     print('\n===Recharge method:===\n') 
+#     print(wizard.recharge())
+#     print('\n===Fire storm method:===\n') 
+#     print(wizard.fire_storm(targets))
 
 
+
+
+class Battle:
+    def __init__(self):
+        self.enemies = [GoblinKing('KingGoblin'), OrcGeneral('GeneralOrc'), Goblin('Goblin'), Orc('Orc')]
+        self.allies = [Fighter('Fighter'), Archer('Legolas'), Warrior('Frodo'), Creature('Gollum')]
+        self.boss = Boss('Boss')
+        self.player = Wizard('Eneko')
+
+    def start(self):
+        orderList = self.enemies + self.allies 
+        orderList.append(self.player)
+        self.allies.append(self.player)
+        orderList.sort(key=lambda x: x.abilities['Speed'], reverse=True)
+        print()
+        print('Battle is about to begin. All combatants:')
+        for x in orderList:
+            time.sleep(0.2)
+            print()
+            print(f"{x.name}, HP: {x.HP}/{x.maxHP}. Abilities: {x.abilities}")  
+        print()
+        print('THE BATTLE BEGINS')
+        print("=======================================================")
+        round = 1
+        while any(character.HP > 0 for character in self.enemies) and any(character.HP > 0 for character in self.allies) and self.player.HP > 0:
+            print(f"\nRound: {round}")
+            for x in orderList:
+                time.sleep(1)
+                if x.check_life() > 0:
+                    print("=======================================================")
+                    if x in self.enemies:
+                        x.turn(round, self.allies)
+                    elif x in self.allies and x != self.player:
+                        x.turn(round, self.enemies)
+                    elif x == self.player:
+                        self.player_turn()
+                    elif x == self.boss: 
+                        x.turn(round, self.allies)
+            
+            if all(enemy.HP <= 0 for enemy in self.enemies):
+                print('Allies win!')
+                break
+            elif all(ally.HP <= 0 for ally in self.allies):
+                print('Enemies win!')
+                break
+            elif self.player.HP <= 0:
+                print('You died!')
+                break
+                
+            
+            print("=======================================================")
+            print(f'End of of round: {round}')
+            print("=======================================================")
+            round += 1
+            enemiesCount = 0
+            for enemy in self.enemies:
+                if enemy.HP > 0:
+                    enemiesCount += 1
+            if enemiesCount == 1 and self.boss not in self.enemies:
+                print('Only one enemy is remaining')
+                print("!!BOSS INCOMING!!")
+                orderList.append(self.boss)
+                self.enemies.append(self.boss)
+
+    def player_turn(self):
+        while True:
+            print(f"Player: {self.player.name}. HP: {self.player.HP}/{self.player.maxHP}. Mana: {self.player.mana}/100")
+            print("Allies:\n")
+            for x in self.allies:
+                if x.check_life() > 0:
+                    print(f"{x.name} HP: {x.HP}/{x.maxHP}")
+            print("=======================================================")
+            player_choice = input("Actions. F: Attack(Select enemy) R: Recharge Mana: \nSpells. 1: Heal(Select ally) 2: Firebolt(Select enemy) 3: Mass Heal(all allies) 4: Fire Storm(all enemies)\nTo Quit game type: Quit: \n")
+            print("=======================================================")
+
+            if player_choice == "F":
+                target = self.player.select_target(self.enemies)
+                if target:
+                    print(self.player.attack(target))
+                    break
+                else:
+                    print("No target selected.")
+            elif player_choice == "R":
+                print(self.player.recharge())
+                break
+            elif player_choice == "1":
+                target = self.player.select_target(self.allies)
+                if target:
+                    print(self.player.heal(target))
+                    break
+                else:
+                    print("No target selected.")
+            elif player_choice == "2":
+                target = self.player.select_target(self.enemies)
+                if target:
+                    print(self.player.fire_bolt(target))
+                    break
+                else:
+                    print("No target selected.")
+            elif player_choice == "3":
+                print(self.player.mass_heal(self.allies))
+                break
+            elif player_choice == "4":
+                print(self.player.fire_storm(self.enemies))
+                break
+            elif player_choice == "Quit":
+                print("You quit the game.")
+                quit()
+            else:
+                print("Invalid input. Please enter a valid action.")
+                continue
+            
+
+
+battle = Battle()
+battle.start()
